@@ -47,7 +47,7 @@ public class ScorePanel extends JPanel {
 		
 	}
 	
-	/* Si el juego est· pausado, muestra este mensaje, hay dos para crear
+	/* Si el juego est√° pausado, muestra este mensaje, hay dos para crear
 	 * un efecto de sombreado */
 	
     private void pauseMsg (Graphics2D g2d){

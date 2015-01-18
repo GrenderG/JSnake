@@ -15,6 +15,9 @@ import javax.swing.JPanel;
 import javax.swing.Timer;
 import javax.swing.border.LineBorder;
 
+/* Esta clase es un panel en el cual se muestra información en
+ * tiempo real relativa a los eventos sucedidos dentro del juego */
+
 public class InfoPanel extends JPanel implements ActionListener {
 
 	private static final long serialVersionUID = 1L;
@@ -22,6 +25,8 @@ public class InfoPanel extends JPanel implements ActionListener {
 	private static int IP_HEIGHT = 30;
 	
 	private static String msg = "";
+	
+	/* Mensajes predeterminados */
 	
 	public static final String MISSED_GREATER_FRUIT = "GREATER FRUIT MISSED";
 	public static final String NORMAL_FRUIT_MSG = "+ 1 LENGTH / POINT";
@@ -31,6 +36,7 @@ public class InfoPanel extends JPanel implements ActionListener {
 	public static final String BAD_FRUIT_MSG = "- 2 LENGTH / POINTS";
 	
 	private static Timer msgTimer;
+	/* Variable utilizada para desvanecer el texto */
 	private static double fontAlphaCount = 10.0;
 	private static boolean stateChanged = false;
 	
@@ -40,6 +46,8 @@ public class InfoPanel extends JPanel implements ActionListener {
         this.setFocusable(false);
         this.setBorder(new LineBorder(new Color(100, 160, 80), 3));
         this.setPreferredSize(new Dimension(IP_WIDTH, IP_HEIGHT));
+        
+        /* El panel se actualiza cada 150 ms */
         
         msgTimer = new Timer (150, this);
 
@@ -56,8 +64,13 @@ public class InfoPanel extends JPanel implements ActionListener {
         		RenderingHints.VALUE_ANTIALIAS_ON);
 		
 		g2d.setColor(new Color(244, 240, 139));
-
+		
+		/* Solo se procede a actualizar en caso de que un nuevo mensaje haya sido
+		 * mandado a mostrar, para que no se repita el ciclo de desvanecimiento */
+		
 		if (stateChanged){
+			/* Mediante la siguiente linea se consigue aplicar el valor del
+			 * canal alfa */
 			g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER,
 			        (float)fontAlphaCount * 0.1f));
 			Font infoPanelFont = new Font("Helvetica", Font.BOLD, 20);
@@ -70,20 +83,28 @@ public class InfoPanel extends JPanel implements ActionListener {
 		
 	}
 	
+	/* Método que aplica un mensaje a ser mostrado */
+	
 	public static void setMSG(String message){
 		msg = message;
 		stateChanged = true;
 		fontAlphaCount = 10.0;
 		msgTimer.start();
 	}
-
+	
+	/* Método que llama el timer cada 150 ms */
+	
 	@Override
 	public void actionPerformed(ActionEvent arg0) {
 		
 		if (!GamePanel.isPaused()){
 			if (msg.equals(PAUSE_INFO))
 				msg = "";
+			/* Valor alpha a restar cada 150 ms */
 			fontAlphaCount -= 0.6;
+			/* En caso de haberse desvanecido se vuelve al valor 
+			 * alfa por defecto preparado para el siguiente mensaje
+			 * a mostrar */
 			if (fontAlphaCount <= 0){
 				stateChanged = false;
 				msgTimer.stop();

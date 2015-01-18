@@ -25,40 +25,43 @@ import net.moralesblog.models.FruitType;
 public class GamePanel extends JPanel implements ActionListener {
 	
 	private static final long serialVersionUID = 1L;
-	/* Tama�o de la pantalla */
+	/* Tamaño de la pantalla */
 	private final int GP_WIDTH = 500;
     private final int GP_HEIGHT = 500;
-    /* Tama�o de los sprites principales */
+    /* Tamaño de los sprites principales */
     private final int DOT_SIZE = 10;
     /* Puntos totales (500*500) / (10 * 10) -> DOT_SIZE */
     private final int ALL_DOTS = 2500;
-    /* Posici�n m�xima a tener en cuenta para la aleatoriedad del spawn de frutas (Si fuera 50 habr�a
+    /* Posición máxima a tener en cuenta para la aleatoriedad del spawn de frutas (Si fuera 50 habría
      * una posibildiad de que salieran fuera, va de 0 a 49 */
     private final int RAND_POS = 49;
-    /* Delay aplicado al timer, la pantalla se actualizar� cada 80 ms */
+    /* Delay aplicado al timer, la pantalla se actualizará cada 80 ms */
     private final int DELAY = 80;
     
     /* Se crean los arrays que contienen las coordenadas del juego */
     private final int snake_x[] = new int[ALL_DOTS];
     private final int snake_y[] = new int[ALL_DOTS];
     
-    /* Puntiaci�n y tiempo transcurrido, se necesita acceder de forma est�tica desde ScorePanel */
+    /* Puntiaci�n y tiempo transcurrido, se necesita acceder de forma estática desde ScorePanel */
     private static int score;
     private static double time;
     
     /* N�mero de partes de la serpiente */   
     private int bodyParts;
+    /* Variable auxiliar al que se le suma las partes del cuerpo
+     * obtenidas para luego sumarlas al orginal */
     private int bodyPartsCumul = 0;
     
     /* Coordenadas donde ha spawneado la fruta */
     private int fruit_x;
     private int fruit_y;
     
-    /* Booleanos que controlan qu� direcci�n est� tomando la serpiente */
+    /* Booleanos que controlan qué dirección está tomando la serpiente */
     private boolean leftDirection = false;
     private boolean rightDirection = true;
     private boolean upDirection = false;
     private boolean downDirection = false;
+    /* Controla si el movimiento es posible o no */
     private boolean canMove = true;
     
     /* Controlan el estado del juego en cada momento */
@@ -70,23 +73,27 @@ public class GamePanel extends JPanel implements ActionListener {
 	private URL fruitEatenPath = GamePanel.class.getResource("/sounds/fruit_eaten.wav");
 	private AudioClip fruitEaten = Applet.newAudioClip(fruitEatenPath);
 	/* Ruta y clip del efecto de sonido a reproducir cuando la serpiente no se come una
-	 * fruta grande después de 5s */
+	 * fruta grande después de 5.6 s */
 	private URL missedGreaterFruitPath = GamePanel.class.getResource("/sounds/greater_fruit_missed.wav");
 	private AudioClip missedFruit = Applet.newAudioClip(missedGreaterFruitPath);
-	
+	/* Ruta y clip del efecto de sonido a reproducir cuando la serpiente se come una
+	 * fruta grande */
 	private URL greaterFruitEatenPath = GamePanel.class.getResource("/sounds/greater_fruit_eaten.wav");
 	private AudioClip greaterFruitEaten = Applet.newAudioClip(greaterFruitEatenPath);
-	
+	/* Ruta y clip del efecto de sonido a reproducir cuando la serpiente no se come una
+	 * fruta mala después de 4 s */
 	private URL missedBadFruitPath = GamePanel.class.getResource("/sounds/bad_fruit_missed.wav");
 	private AudioClip missedBadFruit = Applet.newAudioClip(missedBadFruitPath);
-	
+	/* Ruta y clip del efecto de sonido a reproducir cuando la serpiente se come una
+	 * fruta mala */
 	private URL badFruitEatenPath = GamePanel.class.getResource("/sounds/bad_fruit_eaten.wav");
 	private AudioClip badFruitEaten = Applet.newAudioClip(badFruitEatenPath);
 	
 	/* Timer que controla las veces que se actualiza la pantalla.
 	 * Este objeto es muy importante. Hay que implementar la interfaz ActionListener */
     private Timer timer;
-    /* Contador usado para saber cuanto tiempo ha estado algo activo (como por ejemplo la fruta grande) */
+    /* Contador usado para saber cuanto tiempo ha estado algo activo (como por 
+     * ejemplo la fruta grande) */
     private double auxCont = 0.0;
     
     /* Guarda de qué tipo es la fruta actual */
@@ -133,8 +140,7 @@ public class GamePanel extends JPanel implements ActionListener {
 	            	
 	            }
 	            
-	            /* Se controla la direcci�n de la serpiente, si se pulsan dos teclas en menos de 80 ms
-	             * puede generar problemas. */
+	            /* Se controla la direcci�n de la serpiente */
 	            
 	            if ((key == KeyEvent.VK_A) && (!rightDirection) && canMove) {
 	            	canMove = false;
@@ -203,7 +209,7 @@ public class GamePanel extends JPanel implements ActionListener {
         downDirection = false;
         
         
-        /* Este bucle "spawnea" la serpiente, empezar� en [0, 0] y los siguientes en 
+        /* Este bucle "spawnea" la serpiente, empezará en [0, 0] y los siguientes en 
          * [1, 0] y [2, 0] */
         
         for (int i = 0; i < bodyParts; i++) {
@@ -211,10 +217,10 @@ public class GamePanel extends JPanel implements ActionListener {
             snake_y[i] = 0;
         }
         
-        /* Se llama al m�todo que generar� la primera fruta */        
+        /* Se llama al m�todo que generará la primera fruta */        
         locateFruit();
         
-        /* Indicamos el delay al timer, en nuestro caso 80ms (cada 80ms llamar� al m�todo "actionPerformed"), y se le pasa 
+        /* Indicamos el delay al timer, en nuestro caso 80ms (cada 80ms llamará al método "actionPerformed"), y se le pasa 
          * el delay y this puesto que necesitamos la interfaz implementada (ActionListener) que la tiene la clase GamePanel */
         timer = new Timer(DELAY, this);
         timer.start();
@@ -231,7 +237,7 @@ public class GamePanel extends JPanel implements ActionListener {
         
         Font big = new Font("Helvetica", Font.BOLD, 14);
         Font small = new Font("Helvetica", Font.BOLD, 12);
-        /* Se obtienen las medidas de las fuentes, para poder centrarlas correctamente despu�s */
+        /* Se obtienen las medidas de las fuentes, para poder centrarlas correctamente después */
         FontMetrics metrB = getFontMetrics(big);
         FontMetrics metrS = getFontMetrics(small);
 
@@ -250,7 +256,7 @@ public class GamePanel extends JPanel implements ActionListener {
         } else if (inGame) {
         	
         	/* Crea la cuadricula en el mapa, 50 es el n�mero de columnas / filas,
-        	 * los par�metros de drawLine son el punto donde empezar y el punto
+        	 * los parámetros de drawLine son el punto donde empezar y el punto
         	 * donde acabar */
         	
         	g2d.setColor(new Color(214, 150, 107));
@@ -263,7 +269,7 @@ public class GamePanel extends JPanel implements ActionListener {
     		}
         	
         	/* Si ha spawneado una fruta especial, se renderiza, 
-        	 * est� formada por varios c�rculos superpuestos */
+        	 * está formada por varios círculos superpuestos */
         	if (fruitType == FruitType.GreaterFruit){
         		
         		g2d.setColor(Color.BLACK);
@@ -275,7 +281,7 @@ public class GamePanel extends JPanel implements ActionListener {
             	g2d.setColor(Color.CYAN); 
             	g2d.fillOval(fruit_x + 3, fruit_y + 3, 4, 4);
             	
-            /* Esto es la fruta mala*/	
+            /* Esto es la fruta mala */	
         	}else if (fruitType == FruitType.BadFruit){
         		
         		g2d.setColor(Color.BLACK);
@@ -347,7 +353,6 @@ public class GamePanel extends JPanel implements ActionListener {
         		InfoPanel.setMSG(InfoPanel.GREATER_FRUIT_MSG);
         		greaterFruitEaten.play();
         		auxCont = 0.0;
-        		//bodyParts += 3;
         		bodyPartsCumul += 3;
         		score += 3;
         	/* Fruta mala */	
@@ -355,14 +360,12 @@ public class GamePanel extends JPanel implements ActionListener {
         		InfoPanel.setMSG(InfoPanel.BAD_FRUIT_MSG);
         		auxCont = 0.0;
         		badFruitEaten.play();
-        		bodyPartsCumul -= 3;
-        		//bodyParts -= 2;
+        		bodyPartsCumul -= 2;
         		score -= 2;       		
         	/* Fruta normal */	
         	}else{
         		InfoPanel.setMSG(InfoPanel.NORMAL_FRUIT_MSG);
                 fruitEaten.play();
-        		//bodyParts++;
         		bodyPartsCumul ++;
         		score++;
         	}
@@ -377,19 +380,19 @@ public class GamePanel extends JPanel implements ActionListener {
     private void move() {
     	
     	/* Este bucle hace que se mueva todo el cuerpo, en caso contrario 
-    	 * solo se mover�a la cabeza, el el cuerpo se mueve una posici�n
+    	 * solo se movería la cabeza, el el cuerpo se mueve una posición
     	 * en la cadena. (El segundo se mueve donde estaba el primero, el 
     	 * tercero donde el segundo...) */
         for (int i = bodyParts; i > 0; i--) {
         	/* Si no se actualizan las dos, cuando la serpiente
-        	 * est� doblada no se renderizar� bien */
+        	 * está doblada no se renderizará bien */
             snake_x[i] = snake_x[(i - 1)];
             snake_y[i] = snake_y[(i - 1)];
 
         }
         
-        /* Estos condicionales seg�n que direcci�n est� tomando restan o suman p�xeles (10,
-         * tama�o del sprite) a la serpiente en el eje correspondiente */
+        /* Estos condicionales según que dirección está tomando restan o suman píxeles (10,
+         * tamaño del sprite) a la serpiente en el eje correspondiente */
         
         if (leftDirection) {
             snake_x[0] -= DOT_SIZE;
@@ -408,21 +411,21 @@ public class GamePanel extends JPanel implements ActionListener {
         }
     }
     
-    /* Este m�todo comprueba si la serpiente ha colisionado con ella misma o con el marco */
+    /* Este método comprueba si la serpiente ha colisionado con ella misma o con el marco */
     
     private void checkCollision() {
 
         for (int i = bodyParts; i > 0; i--) {
         	
-        	/* Solo entrar� encaso de que haya comido alguna fruta (tama�o mayor a 4) 
-        	 * Adem�s se comprueba que la cabeza no est� coincidiendo con alguna parte de
+        	/* Solo entrará encaso de que haya comido alguna fruta (tamaño mayor a 4) 
+        	 * Además se comprueba que la cabeza no está coincidiendo con alguna parte de
         	 * su propio cuerpo. */
             if ((i > 4) && (snake_x[0] == snake_x[i]) && (snake_y[0] == snake_y[i])) {
                 inGame = false;
             }
         }
         
-        /* Estos condicionales comprueban que la cabeza no est� sobrepasando los marcos */
+        /* Estos condicionales comprueban que la cabeza no está sobrepasando los marcos */
         
         if (snake_y[0] >= GP_HEIGHT) {
             inGame = false;
@@ -497,7 +500,7 @@ public class GamePanel extends JPanel implements ActionListener {
 	
 	
 	/* Método que ejecuta el timer cada 80ms (delay especificado),
-	 * este m�todo es el "bucle" principal */
+	 * este método es el "bucle" principal */
 	@Override
     public void actionPerformed(ActionEvent e) {
 
@@ -505,7 +508,7 @@ public class GamePanel extends JPanel implements ActionListener {
         	
         	if (fruitType == FruitType.GreaterFruit){
         		auxCont += 0.08;
-        		if (auxCont > 4.0){
+        		if (auxCont > 5.6){
         			InfoPanel.setMSG(InfoPanel.MISSED_GREATER_FRUIT);
         			missedFruit.play();
         			auxCont = 0.0;
@@ -525,10 +528,14 @@ public class GamePanel extends JPanel implements ActionListener {
         	
         	time += 0.08;
             move();
+            /* Una vez se ha "renderizado" el movimiento, ya es posible
+             * volver a mover la serpiente */
             canMove = true;
             checkFruit();
             checkCollision();
             
+            /* Se restringe la suma de partes a la serpiente a una cada
+             * 80 ms */
             if (bodyPartsCumul > 0){
             	bodyParts ++;
             	bodyPartsCumul--;
