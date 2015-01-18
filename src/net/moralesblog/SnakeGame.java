@@ -19,7 +19,8 @@ public class SnakeGame extends JFrame {
 		this.setLayout(new BorderLayout());
 		
         this.add(new ScorePanel(), BorderLayout.NORTH);
-        this.add(new GamePanel(), BorderLayout.SOUTH);
+        this.add(new GamePanel(), BorderLayout.CENTER);
+        this.add(new InfoPanel(), BorderLayout.SOUTH);
         
         this.setResizable(false);
         
