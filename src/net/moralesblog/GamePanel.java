@@ -36,7 +36,7 @@ public class GamePanel extends JPanel implements ActionListener {
      * una posibildiad de que salieran fuera, va de 0 a 49 */
     private final int RAND_POS = 49;
     /* Delay aplicado al timer, la pantalla se actualizará cada 80 ms */
-    private final int DELAY = 80;
+    private final int DELAY = 50;
     
     /* Se crean los arrays que contienen las coordenadas del juego */
     private final int snake_x[] = new int[ALL_DOTS];
@@ -508,15 +508,15 @@ public class GamePanel extends JPanel implements ActionListener {
         if (inGame) {
         	
         	if (fruitType == FruitType.GreaterFruit){
-        		auxCont += 0.08;
-        		if (auxCont > 5.6){
+        		auxCont += 0.05;
+        		if (auxCont > 5.5){
         			InfoPanel.setMSG(InfoPanel.MISSED_GREATER_FRUIT);
         			missedFruit.play();
         			auxCont = 0.0;
         			locateFruit();
         		}
         	}else if (fruitType == FruitType.BadFruit){
-        		auxCont += 0.08;
+        		auxCont += 0.05;
         		if (auxCont > 4.0){
         			InfoPanel.setMSG(InfoPanel.MISSED_BAD_FRUIT);
         			missedBadFruit.play();
@@ -527,7 +527,7 @@ public class GamePanel extends JPanel implements ActionListener {
         		}
         	}
         	
-        	time += 0.08;
+        	time += 0.05;
             move();
             /* Una vez se ha "renderizado" el movimiento, ya es posible
              * volver a mover la serpiente */
