@@ -202,6 +202,7 @@ public class GamePanel extends JPanel implements ActionListener {
         bodyParts = 3;
         score = 0;
         time = 0.0;
+        auxCont = 0.0;
         
         rightDirection = true;
         leftDirection = false;
