@@ -34,6 +34,9 @@ public class InfoPanel extends JPanel implements ActionListener {
 	public static final String PAUSE_INFO = "PRESS Q TO EXIT GAME";
 	public static final String MISSED_BAD_FRUIT = "+ 2 LENGTH / POINTS";
 	public static final String BAD_FRUIT_MSG = "- 2 LENGTH / POINTS";
+	public static final String MISSED_LSD_FRUIT = "LSD FRUIT MISSED";
+	public static final String LSD_FRUIT_MSG = "ENTERING LSD MODE + 5 LENGTH / POINTS";
+	public static final String LSD_FRUIT_LEAVING_MSG = "LEAVING LSD MODE";
 	
 	private static Timer msgTimer;
 	/* Variable utilizada para desvanecer el texto */

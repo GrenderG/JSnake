@@ -8,5 +8,7 @@ public enum FruitType {
 	
 	NormalFruit,
 	
-	BadFruit;
+	BadFruit,
+	
+	LSDFruit;
 }

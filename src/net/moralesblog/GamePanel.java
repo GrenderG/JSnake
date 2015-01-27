@@ -35,8 +35,15 @@ public class GamePanel extends JPanel implements ActionListener {
     /* Posición máxima a tener en cuenta para la aleatoriedad del spawn de frutas (Si fuera 50 habría
      * una posibildiad de que salieran fuera, va de 0 a 49 */
     private final int RAND_POS = 49;
-    /* Delay aplicado al timer, la pantalla se actualizará cada 80 ms */
+    /* Delay aplicado al timer, la pantalla se actualizará cada 50 ms */
     private final int DELAY = 50;
+    
+    /* Colores de fondo y cuadrícula */
+    private Color backgroundColor = new Color(202, 140, 99);
+    private Color gridColor = new Color(214, 150, 107);
+    
+    private Color snakeBodyColor = new Color(99, 160, 135);
+    private Color snakeBorderColor = new Color(79, 127, 108);
     
     /* Se crean los arrays que contienen las coordenadas del juego */
     private final int snake_x[] = new int[ALL_DOTS];
@@ -73,7 +80,7 @@ public class GamePanel extends JPanel implements ActionListener {
 	private URL fruitEatenPath = GamePanel.class.getResource("/sounds/fruit_eaten.wav");
 	private AudioClip fruitEaten = Applet.newAudioClip(fruitEatenPath);
 	/* Ruta y clip del efecto de sonido a reproducir cuando la serpiente no se come una
-	 * fruta grande después de 5.6 s */
+	 * fruta grande después de 5.5 s */
 	private URL missedGreaterFruitPath = GamePanel.class.getResource("/sounds/greater_fruit_missed.wav");
 	private AudioClip missedFruit = Applet.newAudioClip(missedGreaterFruitPath);
 	/* Ruta y clip del efecto de sonido a reproducir cuando la serpiente se come una
@@ -88,6 +95,14 @@ public class GamePanel extends JPanel implements ActionListener {
 	 * fruta mala */
 	private URL badFruitEatenPath = GamePanel.class.getResource("/sounds/bad_fruit_eaten.wav");
 	private AudioClip badFruitEaten = Applet.newAudioClip(badFruitEatenPath);
+	/* Ruta y clip del efecto de sonido a reproducir cuando la serpiente se come una
+	 * fruta LSD */
+	private URL LSDFruitEatenPath = GamePanel.class.getResource("/sounds/lsd_fruit_eaten.wav");
+	private AudioClip LSDFruitEaten = Applet.newAudioClip(LSDFruitEatenPath);
+	/* Ruta y clip del efecto de sonido a reproducir cuando la serpiente no se come una
+	 * fruta mala después de 3 s */
+	private URL missedLSDFruitPath = GamePanel.class.getResource("/sounds/lsd_fruit_missed.wav");
+	private AudioClip missedLSDFruit = Applet.newAudioClip(missedLSDFruitPath);
 	
 	/* Timer que controla las veces que se actualiza la pantalla.
 	 * Este objeto es muy importante. Hay que implementar la interfaz ActionListener */
@@ -98,6 +113,14 @@ public class GamePanel extends JPanel implements ActionListener {
     
     /* Guarda de qué tipo es la fruta actual */
 	private FruitType fruitType = null;
+	/* Comprueba si se puede spawnear la fruta o no */
+	private boolean canSpawnFruit = true;
+	
+	/* Variables usadas para hacer posible el
+	 * efecto del LSD durante 8 s */
+	private byte LSDColorSetter = 0;
+	private boolean isLSDModeOn = false;
+	private double LSDAuxCount = 0.0;
 	
 	/* Constructor para GamePanel */
 	
@@ -142,28 +165,28 @@ public class GamePanel extends JPanel implements ActionListener {
 	            
 	            /* Se controla la direcci�n de la serpiente */
 	            
-	            if ((key == KeyEvent.VK_A) && (!rightDirection) && canMove) {
+	            if ((key == KeyEvent.VK_A || key == KeyEvent.VK_LEFT) && (!rightDirection) && canMove) {
 	            	canMove = false;
 	                leftDirection = true;
 	                upDirection = false;
 	                downDirection = false;
 	            }
 
-	            if ((key == KeyEvent.VK_D) && (!leftDirection) && canMove) {
+	            if ((key == KeyEvent.VK_D || key == KeyEvent.VK_RIGHT) && (!leftDirection) && canMove) {
 	            	canMove = false;
 	                rightDirection = true;
 	                upDirection = false;
 	                downDirection = false;
 	            }
 
-	            if ((key == KeyEvent.VK_W) && (!downDirection) && canMove) {
+	            if ((key == KeyEvent.VK_W || key == KeyEvent.VK_UP) && (!downDirection) && canMove) {
 	            	canMove = false;
 	                upDirection = true;
 	                rightDirection = false;
 	                leftDirection = false;
 	            }
 
-	            if ((key == KeyEvent.VK_S) && (!upDirection) && canMove) {
+	            if ((key == KeyEvent.VK_S || key == KeyEvent.VK_DOWN) && (!upDirection) && canMove) {
 	            	canMove = false;
 	                downDirection = true;
 	                rightDirection = false;
@@ -184,7 +207,7 @@ public class GamePanel extends JPanel implements ActionListener {
         	
         });
         
-        this.setBackground(new Color(202, 140, 99));
+        this.setBackground(backgroundColor);
         this.setFocusable(true);
         
         this.setPreferredSize(new Dimension(GP_WIDTH, GP_HEIGHT));
@@ -203,6 +226,15 @@ public class GamePanel extends JPanel implements ActionListener {
         score = 0;
         time = 0.0;
         auxCont = 0.0;
+        LSDAuxCount = 0.0;
+        
+        isLSDModeOn = false;
+        backgroundColor = new Color(202, 140, 99);
+        this.setBackground(backgroundColor);
+        gridColor = new Color(214, 150, 107);
+        
+        snakeBodyColor = new Color(99, 160, 135);
+        snakeBorderColor = new Color(79, 127, 108);
         
         rightDirection = true;
         leftDirection = false;
@@ -221,7 +253,7 @@ public class GamePanel extends JPanel implements ActionListener {
         /* Se llama al m�todo que generará la primera fruta */        
         locateFruit();
         
-        /* Indicamos el delay al timer, en nuestro caso 80ms (cada 80ms llamará al método "actionPerformed"), y se le pasa 
+        /* Indicamos el delay al timer, en nuestro caso 50ms (cada 50ms llamará al método "actionPerformed"), y se le pasa 
          * el delay y this puesto que necesitamos la interfaz implementada (ActionListener) que la tiene la clase GamePanel */
         timer = new Timer(DELAY, this);
         timer.start();
@@ -256,11 +288,11 @@ public class GamePanel extends JPanel implements ActionListener {
         
         } else if (inGame) {
         	
-        	/* Crea la cuadricula en el mapa, 50 es el n�mero de columnas / filas,
+        	/* Crea la cuadricula en el mapa, 50 es el número de columnas / filas,
         	 * los parámetros de drawLine son el punto donde empezar y el punto
         	 * donde acabar */
         	
-        	g2d.setColor(new Color(214, 150, 107));
+        	g2d.setColor(gridColor);
     		g2d.drawRect(0, 0, GP_WIDTH, GP_HEIGHT);
     		for(int x = 0; x < 50; x++) {
     			for(int y = 0; y < 50; y++) {
@@ -292,7 +324,15 @@ public class GamePanel extends JPanel implements ActionListener {
             	g2d.setColor(new Color(229, 110, 110)); 
             	g2d.fillOval(fruit_x + 3, fruit_y + 3, 4, 4);
         		
-            /* Esto es la fruta normal */
+            	/* Esto es la fruta LSD */
+        	}else if (fruitType == FruitType.LSDFruit){
+        		g2d.setColor(Color.BLACK);
+        		g2d.fillOval(fruit_x, fruit_y, DOT_SIZE, DOT_SIZE);
+            	g2d.setColor(Color.MAGENTA); 
+            	g2d.fillOval(fruit_x + 1, fruit_y + 1, 8, 8);
+            	g2d.setColor(Color.GREEN); 
+            	g2d.fillOval(fruit_x + 3, fruit_y + 3, 4, 4);
+                /* Esto es la fruta normal */
         	}else{
         		
         		g2d.setColor(Color.BLACK);
@@ -301,22 +341,24 @@ public class GamePanel extends JPanel implements ActionListener {
             	g2d.fillOval(fruit_x + 1, fruit_y + 1, 8, 8);
             	
         	}
-        	
+        	/*
+        	 *         	
+        	 */
         	/* En este bucle se renderiza la serpiente*/       	
             for (int i = 0; i < bodyParts; i++) {
             	
             	/* Color del borde de la serpiente */
 
-				g2d.setColor(new Color(79, 127, 108));
+				g2d.setColor(snakeBorderColor);
 				g2d.fillRect(snake_x[i], snake_y[i], DOT_SIZE,
 						DOT_SIZE);
 
 				/* Cabeza de la serpiente */
 				if (i == 0) {
-					g2d.setColor(new Color(79, 127, 108));
+					g2d.setColor(snakeBorderColor);
 				/* Resto del cuerpo */
 				} else {
-					g2d.setColor(new Color(99, 160, 135));
+					g2d.setColor(snakeBodyColor);
 				}
 				
 				g2d.fillRect(snake_x[i] + 1, snake_y[i] + 1, 8, 8);
@@ -329,7 +371,7 @@ public class GamePanel extends JPanel implements ActionListener {
 			String msg = "Game Over";
 			String subMsg = "Press SPACE to continue";
 
-			g2d.setColor(Color.white);
+			g2d.setColor(Color.WHITE);
 			/* Se centran en la pantalla */
 			g2d.setFont(big);
 			g2d.drawString(msg, (GP_WIDTH - metrB.stringWidth(msg)) / 2,
@@ -362,7 +404,15 @@ public class GamePanel extends JPanel implements ActionListener {
         		auxCont = 0.0;
         		badFruitEaten.play();
         		bodyPartsCumul -= 2;
-        		score -= 2;       		
+        		score -= 2;
+        	/* Fruta LSD */	
+        	}else if (fruitType == FruitType.LSDFruit){
+        		InfoPanel.setMSG(InfoPanel.LSD_FRUIT_MSG);
+        		auxCont = 0.0;
+        		LSDFruitEaten.play();
+        		isLSDModeOn = true;
+        		bodyPartsCumul += 5;
+        		score += 5;
         	/* Fruta normal */	
         	}else{
         		InfoPanel.setMSG(InfoPanel.NORMAL_FRUIT_MSG);
@@ -372,7 +422,8 @@ public class GamePanel extends JPanel implements ActionListener {
         	}
         	
         	/* Se vuelve a spawnear una fruta */
-            locateFruit();
+        	if (canSpawnFruit)
+        		locateFruit();
         }
     }
     
@@ -459,8 +510,10 @@ public class GamePanel extends JPanel implements ActionListener {
 		
 		if (spawnRateOp > 5.2)
 			fruitType = FruitType.GreaterFruit;
-		else if (spawnRateOp < 5.0 && spawnRateOp > 3.0 && (bodyParts >= 5 && score >= 2))
+		else if (spawnRateOp < 5.2 && spawnRateOp > 4.2 && (bodyParts >= 5 && score >= 2))
 			fruitType = FruitType.BadFruit;
+		else if (spawnRateOp < 4.0 && spawnRateOp > 3.2 && !isLSDModeOn)
+			fruitType = FruitType.LSDFruit;
 		else
 			fruitType = FruitType.NormalFruit;
 		
@@ -478,8 +531,11 @@ public class GamePanel extends JPanel implements ActionListener {
 		for (int i = 0; i < bodyParts; i++) {
 			if (snake_x[i] == fruit_x && snake_y[i] == fruit_y) {
 				locateFruit();
+				canSpawnFruit = false;
 			}
 		}
+		
+		canSpawnFruit = true;
 
     }
     
@@ -500,7 +556,7 @@ public class GamePanel extends JPanel implements ActionListener {
 	}
 	
 	
-	/* Método que ejecuta el timer cada 80ms (delay especificado),
+	/* Método que ejecuta el timer cada 50ms (delay especificado),
 	 * este método es el "bucle" principal */
 	@Override
     public void actionPerformed(ActionEvent e) {
@@ -525,7 +581,51 @@ public class GamePanel extends JPanel implements ActionListener {
         			bodyParts += 2;
         			locateFruit();
         		}
+        	}else if (fruitType == FruitType.LSDFruit){
+        		auxCont += 0.05;
+        		if (auxCont > 3.0){
+        			missedLSDFruit.play();
+        			InfoPanel.setMSG(InfoPanel.MISSED_LSD_FRUIT);
+        			auxCont = 0.0;
+        			locateFruit();
+        		}
         	}
+        	
+			if (isLSDModeOn) {
+				
+				/* Si pasan 8 s todo vuelve a la normalidad */
+				if (LSDAuxCount > 8){
+        			InfoPanel.setMSG(InfoPanel.LSD_FRUIT_LEAVING_MSG);
+					isLSDModeOn = false;
+					LSDAuxCount = 0.0;
+					
+			        backgroundColor = new Color(202, 140, 99);
+			        this.setBackground(backgroundColor);
+			        gridColor = new Color(214, 150, 107);
+			        
+			        snakeBodyColor = new Color(99, 160, 135);
+			        snakeBorderColor = new Color(79, 127, 108);
+			        
+			        /* Aquí se realiza el parpadeo cada 50ms */
+				}else{
+					if (LSDColorSetter == 0) {
+						LSDColorSetter++;
+						this.setBackground(Color.GREEN);
+						this.gridColor = Color.MAGENTA;
+						this.snakeBodyColor = Color.MAGENTA;
+						this.snakeBorderColor = Color.GREEN;
+					} else {
+						LSDColorSetter--;
+	            		this.setBackground(Color.MAGENTA);
+	            		this.gridColor = Color.GREEN;
+	            		this.snakeBodyColor = Color.GREEN;
+	            		this.snakeBorderColor = Color.MAGENTA;
+					}
+					
+					LSDAuxCount += 0.05;
+				}				
+
+			}
         	
         	time += 0.05;
             move();
@@ -536,7 +636,7 @@ public class GamePanel extends JPanel implements ActionListener {
             checkCollision();
             
             /* Se restringe la suma de partes a la serpiente a una cada
-             * 80 ms */
+             * 50 ms */
             if (bodyPartsCumul > 0){
             	bodyParts ++;
             	bodyPartsCumul--;
