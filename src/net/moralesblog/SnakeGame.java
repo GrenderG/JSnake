@@ -35,7 +35,9 @@ public class SnakeGame extends JFrame {
     
 
     public static void main(String[] args) {
-        
+    	if (args[0] != null && args[0].equals("SUPERLSDMODE"))
+    		GamePanel.superLSDMode = true;
+    	
         EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {                

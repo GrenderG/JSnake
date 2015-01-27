@@ -121,6 +121,7 @@ public class GamePanel extends JPanel implements ActionListener {
 	private byte LSDColorSetter = 0;
 	private boolean isLSDModeOn = false;
 	private double LSDAuxCount = 0.0;
+	public static boolean superLSDMode;
 	
 	/* Constructor para GamePanel */
 	
@@ -228,7 +229,11 @@ public class GamePanel extends JPanel implements ActionListener {
         auxCont = 0.0;
         LSDAuxCount = 0.0;
         
-        isLSDModeOn = false;
+        if (!superLSDMode)
+        	isLSDModeOn = false;
+        else
+        	isLSDModeOn = true;
+        
         backgroundColor = new Color(202, 140, 99);
         this.setBackground(backgroundColor);
         gridColor = new Color(214, 150, 107);
@@ -621,12 +626,12 @@ public class GamePanel extends JPanel implements ActionListener {
 	            		this.snakeBodyColor = Color.GREEN;
 	            		this.snakeBorderColor = Color.MAGENTA;
 					}
-					
-					LSDAuxCount += 0.05;
+					if (!superLSDMode)
+						LSDAuxCount += 0.05;
 				}				
 
 			}
-        	
+
         	time += 0.05;
             move();
             /* Una vez se ha "renderizado" el movimiento, ya es posible
