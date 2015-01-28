@@ -24,7 +24,7 @@ public class SnakeGame extends JFrame {
         
         this.setResizable(false);
         
-        this.setTitle("JSnake");
+        this.setTitle("JSnake-");
         this.setIconImage(icon.getImage());
 		this.pack();
         this.setLocationRelativeTo(null);
